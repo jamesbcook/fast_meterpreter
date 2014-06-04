@@ -6,6 +6,7 @@ module Menu
     puts 'Setting up webserver to host the powershell script'
     puts '*' * 50
   end
+
   def msfhost_alert
     puts '*' * 30
     puts 'Setting up the MSF server'
